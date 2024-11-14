@@ -2,15 +2,16 @@ from keras.layers import Input
 from keras.models import Model
 from model import SiameseNetwork
 from keras.callbacks import History
-from generate_dataset import generate_triplets
+from generate_dataset import generate_triplet_dataset
 import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow as tf
 
 if __name__ == "__main__":
     data_dir = 'train'
     num_triplets_per_person = 10
-    triplets, anchor_names = generate_triplets(data_dir, num_triplets_per_person)
-    print(triplets.shape, anchor_names.shape)
+    triplet_dataset = generate_triplet_dataset(data_dir, num_triplets_per_person)
+    triplet_dataset = triplet_dataset.batch(32).prefetch(tf.data.AUTOTUNE)
 
     anchor_input = Input(name="anchor_input", shape=(224, 224, 3))
     positive_input = Input(name="positive_input", shape=(224, 224, 3))
@@ -24,17 +25,16 @@ if __name__ == "__main__":
 
     history = History()
 
-    print(triplets[:, 0].shape)
-    print(triplets[:, 1].shape)
-    print(triplets[:, 2].shape)
-    siamese_model.fit([triplets[:, 0], triplets[:, 1], triplets[:, 2]], 
-                      None, 
-                      epochs=10, 
-                      batch_size=32)
+    siamese_model.fit(triplet_dataset, epochs=10, callbacks=[history])
 
     model_save_path = 'siamese_model.keras'
     siamese_model.save(model_save_path)
     print(f"Model saved to {model_save_path}")
+
+    embedding_model = model.embedding_model()
+    embedding_model_save_path = 'embedding_model.keras'
+    embedding_model.save(embedding_model_save_path)
+    print(f"Embedding model saved to {embedding_model_save_path}")
 
     # Plot the loss graph
     plt.plot(history.history['loss'])

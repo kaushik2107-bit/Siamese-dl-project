@@ -1,7 +1,7 @@
 import os
 import random
 import numpy as np
-from keras.preprocessing.image import load_img, img_to_array, save_img
+from keras.utils import load_img, img_to_array, save_img
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
@@ -55,8 +55,11 @@ def generate_triplets(data_dir, num_triplets_per_person):
 
 def generate_triplet_dataset(data_dir, num_triplets_per_person):
     triplets, _ = generate_triplets(data_dir, num_triplets_per_person)
-    triplet_dataset = tf.data.Dataset.from_tensor_slices((triplets[:, 0], triplets[:, 1], triplets[:, 2]))
-    triplet_dataset = triplet_dataset.map(lambda anchor, positive, negative: (load_image(anchor), load_image(positive), load_image(negative)))
+    anchors = triplets[:, 0]
+    positives = triplets[:, 1]
+    negatives = triplets[:, 2]
+    triplet_dataset = tf.data.Dataset.from_tensor_slices((anchors, positives, negatives))
+    triplet_dataset = triplet_dataset.map(lambda anchor, positive, negative: ((anchor, positive, negative), ()))
     return triplet_dataset
 
 def save_random_triplet(triplets, output_dir, num_triplet_to_save=1):

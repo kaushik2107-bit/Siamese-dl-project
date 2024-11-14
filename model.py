@@ -28,8 +28,18 @@ class SiameseNetwork(Model):
         anchor_input, positive_input, negative_input = inputs
         anchor_embedding = self.model(anchor_input)
         positive_embedding = self.model(positive_input)
-        negative_embedding = self.model(negative_input)                
+        negative_embedding = self.model(negative_input)     
+
+        anchor_embedding = tf.nn.l2_normalize(anchor_embedding, axis=-1)
+        positive_embedding = tf.nn.l2_normalize(positive_embedding, axis=-1)
+        negative_embedding = tf.nn.l2_normalize(negative_embedding, axis=-1)
+        
         return self.triplet_loss_layer([anchor_embedding, positive_embedding, negative_embedding])
+
+    def embedding_model(self):
+        input_tensor = Input(shape=(224, 224, 3))
+        embedding = self.model(input_tensor)
+        return Model(inputs=input_tensor, outputs=embedding)
 
 if __name__ == "__main__":
     anchor_input = Input(name="anchor_input", shape=(224, 224, 3))
@@ -37,7 +47,20 @@ if __name__ == "__main__":
     negative_input = Input(name="negative_input", shape=(224, 224, 3))
 
     model = SiameseNetwork()
+    embedding_model= model.embedding_model()
+    embedding_model.compile(optimizer='adam')
+    embedding_model.summary()
+
     siamese_model = Model(inputs=[anchor_input, positive_input, negative_input], outputs=model([anchor_input, positive_input, negative_input]))
     siamese_model.compile(optimizer='adam')
 
     siamese_model.summary()
+
+    from keras.applications import InceptionResNetV2
+    inception_model = InceptionResNetV2(weights='imagenet', include_top=False, pooling='avg')
+    inception_model.summary()
+
+    from keras.utils import plot_model
+    plot_model(inception_model, to_file='inception_model.png', show_shapes=True, show_layer_names=True)
+    plot_model(siamese_model, to_file='siamese_model.png', show_shapes=True, show_layer_names=True)
+    plot_model(embedding_model, to_file='embedding_model.png', show_shapes=True, show_layer_names=True)
