@@ -4,8 +4,9 @@ import cv2
 from mtcnn import MTCNN
 from keras.models import load_model
 from keras.utils import img_to_array
-from keras.applications.vgg16 import preprocess_input
+from keras.applications.inception_resnet_v2 import preprocess_input
 from sklearn.preprocessing import normalize
+from keras.applications import VGG16
 
 detector = MTCNN()
 
@@ -136,6 +137,7 @@ def add_entire_folder(path, model, embeddings_file):
                 if image_path.lower().endswith(('.png', '.jpg', '.jpeg')):
                     print(image_path)
                     add_embedding_to_storage(image_path, person_name, model, embeddings_file)
+                    break
 
 def predict_multiple_faces(image_path, model, embeddings_file, output_path, threshold=0.5):
     image = cv2.imread(image_path)
@@ -171,15 +173,16 @@ if __name__ == "__main__":
     model_path = 'embedding_model.keras'
     embeddings_file = 'stored_embeddings.npz'
 
-    model = load_model(model_path)
+    # model = load_model(model_path)
+    model = InceptionResNetV2(weights='imagenet', include_top=False, pooling='avg')
 
     # embeddings, labels = load_embeddings(embeddings_file)
 
-    # add_entire_folder("database", model, embeddings_file)
+    add_entire_folder("database", model, embeddings_file)
 
     image_path = 'test-image3.jpg'
     output_path = "output4.jpg"
-    predict_multiple_faces(image_path, model, embeddings_file, output_path, threshold=0.21)
+    predict_multiple_faces(image_path, model, embeddings_file, output_path, threshold=100)
 
     # new_face_path = 'new_person.jpg'
     # new_person_label = 'Person_Name'

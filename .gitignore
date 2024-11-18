@@ -1,2 +1,6 @@
 embedding_model.keras
 siamese_model.keras
+__pycache__
+triplet_data.csv
+triplet_data1_val.csv
+triplet_data1.csv
