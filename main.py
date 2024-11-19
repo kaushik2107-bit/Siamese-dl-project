@@ -14,13 +14,22 @@ def load_image(image_path, mode:str = "rgb"):
     
 face_recognizer = FaceRecognition()
 # for file in glob.glob("database/*"):
-#     person_name = os.path.splitext(os.path.basename(file))[0]
-#     img = load_image(file)
-#     face_recognizer.register_face(image=img, name=person_name)
+    # person_name = os.path.splitext(os.path.basename(file))[0]
+    # img = load_image(file)
+    # face_recognizer.register_face(image=img, name=person_name)
+
+# person_name = os.path.splitext("U21CS013")[0]
+# img = load_image("database/U21CS013.jpg")
+# face_recognizer.register_face(image=img, name=person_name)
 
 img = load_image("test/test2.jpg")
+input_image_resized = cv2.resize(img, (1400, 400))
+cv2.imshow('Input Image', input_image_resized)
+cv2.waitKey(5000) 
+cv2.destroyWindow('Input Image')
 matches = face_recognizer.recognize_faces(image=img)
 # print(matches)
+
 
 for bbox, match, min_dist in matches:
     if match is None: continue  
@@ -32,4 +41,9 @@ for bbox, match, min_dist in matches:
 
 output_path = "results/test2-output.jpg"
 cv2.imwrite(output_path, img)
+output_image_resized = cv2.resize(img, (1400, 400))
+cv2.imshow('Output Image', output_image_resized)
+cv2.waitKey(5000) 
+cv2.destroyWindow('Output Image')
+
 print(f"Annotated image saved at {output_path}")
